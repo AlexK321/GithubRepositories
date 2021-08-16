@@ -1,0 +1,109 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true,
+        "jest/globals": true
+    },
+    "extends": [
+        "plugin:@typescript-eslint/recommended",
+        "plugin:react/recommended",
+        "plugin:import/errors",
+        "plugin:import/warnings",
+        "plugin:import/typescript",
+        "airbnb",
+        "plugin:prettier/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": 12,
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react",
+        "@typescript-eslint",
+        "prettier",
+        "jest"
+    ],
+    "rules": {
+        "react/jsx-filename-extension": [
+            1,
+            {
+                "extensions": [
+                    ".tsx"
+                ]
+            }
+        ],
+        "no-use-before-define": "off",
+        "require-jsdoc": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
+        "@typescript-eslint/ban-types": "off",
+        "@typescript-eslint/no-unused-vars": "error",
+        "import/extensions": "off",
+        "spaced-comment": "off",
+        "no-unused-vars": "off",
+        "react/prop-types": "off",
+        "react/require-default-props": "off",
+        "no-multiple-empty-lines": [
+            2,
+            {
+                "max": 1
+            }
+        ],
+        "padding-line-between-statements": [
+            2,
+            {
+                "blankLine": "always",
+                "prev": "*",
+                "next": [
+                    "if",
+                    "return"
+                ]
+            },
+            {
+                "blankLine": "always",
+                "prev": "block-like",
+                "next": "*"
+            },
+            {
+                "blankLine": "always",
+                "prev": [
+                    "const",
+                    "let"
+                ],
+                "next": "*"
+            },
+            {
+                "blankLine": "any",
+                "prev": [
+                    "const",
+                    "let"
+                ],
+                "next": [
+                    "const",
+                    "let"
+                ]
+            }
+        ],
+        "jest/no-disabled-tests": "warn",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
+        "jest/prefer-to-have-length": "warn",
+        "jest/valid-expect": "error",
+        "react/jsx-props-no-spreading": "off"
+    },
+    "settings": {
+        "import/resolver": {
+            "node": {
+                "extensions": [
+                    ".js",
+                    ".jsx",
+                    ".ts",
+                    ".tsx"
+                ]
+            }
+        }
+    }
+}
