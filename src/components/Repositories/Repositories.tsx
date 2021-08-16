@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useQuery } from '@apollo/client';
 import { makeStyles } from '@material-ui/core/styles';
 import { useHistory } from 'react-router-dom';
@@ -12,6 +12,7 @@ import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import { TextField } from '@material-ui/core';
 import GET_ALL_REPOSITORIES from '../../graphql/query/repositories';
+import AuthContext from '../../AuthContext';
 
 interface Column {
   id: 'name' | 'owner' | 'description' | 'lang' | 'startCount';
@@ -84,7 +85,6 @@ function createData(repData: IRepositoriesData): Data[] {
   });
 
   return newData;
-  //return { name, code, population, size, density };
 }
 
 const useStyles = makeStyles({
@@ -97,6 +97,12 @@ const useStyles = makeStyles({
 });
 
 const Repositories: React.FC = () => {
+  const { authState, setAuthState } = useContext(AuthContext);
+  const history = useHistory();
+
+  if (authState.isLoggedIn === false) {
+    history.push('/login');
+  }
   let data: any = {};// eslint-disable-line
 
   data = useQuery(GET_ALL_REPOSITORIES);
@@ -105,6 +111,11 @@ const Repositories: React.FC = () => {
   //   data = useQuery(GET_ALL_REPOSITORIES);
   // }, []);
 
+  const signOut = (): void => {
+    localStorage.clear();
+    setAuthState({ ...authState, isLoggedIn: false, user: '' });
+  };
+
   const repositoriesData: IRepositoriesData = data?.data?.user?.repositories;
 
   const rows = createData(repositoriesData);
@@ -112,8 +123,6 @@ const Repositories: React.FC = () => {
   const classes = useStyles();
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-
-  const history = useHistory();
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     history.push(`/repository/${e.currentTarget.name}`);
@@ -129,59 +138,69 @@ const Repositories: React.FC = () => {
   };
 
   return (
-    <Paper className={classes.root}>
-      <TableContainer className={classes.container}>
-        <Table stickyHeader aria-label="sticky table">
-          <TableHead>
-            <TableRow>
-              {columns.map((column) => (
-                <TableCell
-                  key={column.id}
-                  align={column.align}
-                  style={{ minWidth: column.minWidth }}
-                >
-                  {column.label}
-                  <TextField
-                    id={column.id}
-                    label="Search"
-                    type="input"
-                    autoComplete="current-password"
-                  />
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-              return (
-                <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
-                  {columns.map((column) => {
-                    const value = row[column.id];
+    <div>
+      {authState.isLoggedIn && (
+        <img alt="" src={authState.user.avatar_url} width="100px" height="100px" />
+      )}
+      <button type="button" onClick={signOut}>
+        {' '}
+        Выйти{' '}
+      </button>
+      <div>Hello</div>
+      <Paper className={classes.root}>
+        <TableContainer className={classes.container}>
+          <Table stickyHeader aria-label="sticky table">
+            <TableHead>
+              <TableRow>
+                {columns.map((column) => (
+                  <TableCell
+                    key={column.id}
+                    align={column.align}
+                    style={{ minWidth: column.minWidth }}
+                  >
+                    {column.label}
+                    <TextField
+                      id={column.id}
+                      label="Search"
+                      type="input"
+                      autoComplete="current-password"
+                    />
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rows?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                return (
+                  <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
+                    {columns.map((column) => {
+                      const value = row[column.id];
 
-                    return (
-                      <TableCell key={column.id} align={column.align}>
-                        <button name={String(value)} type="button" onClick={handleClick}>
-                          {value}
-                        </button>
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 15]}
-        component="div"
-        count={rows?.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
-    </Paper>
+                      return (
+                        <TableCell key={column.id} align={column.align}>
+                          <button name={String(value)} type="button" onClick={handleClick}>
+                            {value}
+                          </button>
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 15]}
+          component="div"
+          count={rows?.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Paper>
+    </div>
   );
 };
 

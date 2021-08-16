@@ -15,8 +15,6 @@ const Repository: React.FC = () => {
     variables: { name: repositoryId },
   });
 
-  console.log(data);
-
   return (
     <div>
       <p>ID: {data?.user.repository.id}</p>

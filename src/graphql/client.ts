@@ -11,7 +11,7 @@ const httpLink = createHttpLink({
 });
 
 const authLink = setContext((_, { headers }) => {
-  const token = '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';
+  const token = process.env.REACT_APP_CLIENT_TOKEN;
   //const token = localStorage.getItem('token');
 
   return {
