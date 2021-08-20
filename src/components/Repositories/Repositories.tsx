@@ -1,205 +1,80 @@
-import React, { useContext } from 'react';
-import { useQuery } from '@apollo/client';
-import { makeStyles } from '@material-ui/core/styles';
-import { useHistory } from 'react-router-dom';
-import Paper from '@material-ui/core/Paper';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TablePagination from '@material-ui/core/TablePagination';
-import TableRow from '@material-ui/core/TableRow';
-import { TextField } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
+import { useLazyQuery } from '@apollo/client';
+//import Loading from '../Loading/Loading';
+import TableUI from '../TableUI/TableUI';
+import AuthBlock from '../AuthBlock/AuthBlock';
 import GET_ALL_REPOSITORIES from '../../graphql/query/repositories';
-import AuthContext from '../../AuthContext';
-
-interface Column {
-  id: 'name' | 'owner' | 'description' | 'lang' | 'startCount';
-  label: string;
-  minWidth?: number;
-  align?: 'right';
-  format?: (value: number) => string;
-}
-
-const columns: Column[] = [
-  { id: 'name', label: 'Name', minWidth: 150 },
-  { id: 'owner', label: 'Owner', minWidth: 150 },
-  {
-    id: 'description',
-    label: 'Description',
-    minWidth: 150,
-  },
-  {
-    id: 'lang',
-    label: 'Lang',
-    minWidth: 150,
-    align: 'right',
-  },
-  {
-    id: 'startCount',
-    label: 'Start Count',
-    minWidth: 150,
-    align: 'right',
-  },
-];
-
-interface Data {
-  name: string;
-  owner: string;
-  description: string;
-  lang: string;
-  startCount: number;
-}
-
-interface IRepositoryData {
-  description: string;
-  name: string;
-  stargazerCount: number;
-  isPrivate: boolean;
-  owner: {
-    login: string;
-  };
-  languages: {
-    nodes: [
-      {
-        name: string;
-      }
-    ];
-  };
-}
-
-interface IRepositoriesData {
-  nodes: [IRepositoryData];
-}
-
-function createData(repData: IRepositoriesData): Data[] {
-  const newData = repData?.nodes.map((item) => {
-    return {
-      name: item?.name,
-      owner: item?.owner?.login,
-      description: item?.description || '',
-      lang: item?.languages?.nodes[0]?.name || '',
-      startCount: item?.stargazerCount,
-    };
-  });
-
-  return newData;
-}
-
-const useStyles = makeStyles({
-  root: {
-    width: '100%',
-  },
-  container: {
-    maxHeight: 440,
-  },
-});
+import useDebounce from '../../hooks/useDebounse';
+import { Data, IInputValue, IQueryVariables, IPaginationData } from './interfaces';
+import createData from './createData';
 
 const Repositories: React.FC = () => {
-  const { authState, setAuthState } = useContext(AuthContext);
-  const history = useHistory();
+  let initialRows = [] as Data[];
+  const [lazyGetRepositories, { data }] = useLazyQuery(GET_ALL_REPOSITORIES);
 
-  if (authState.isLoggedIn === false) {
-    history.push('/login');
-  }
-  let data: any = {};// eslint-disable-line
+  const [rows, setRows] = useState([] as Data[]);
 
-  data = useQuery(GET_ALL_REPOSITORIES);
-
-  // useEffect(() => {
-  //   data = useQuery(GET_ALL_REPOSITORIES);
-  // }, []);
-
-  const signOut = (): void => {
-    localStorage.clear();
-    setAuthState({ ...authState, isLoggedIn: false, user: '' });
+  const queryVariables: IQueryVariables = {
+    variables: { searchBy: 'is:public', first: 10, after: null, before: null },
   };
 
-  const repositoriesData: IRepositoriesData = data?.data?.user?.repositories;
+  useEffect(() => {
+    lazyGetRepositories(queryVariables);
+  }, []);
 
-  const rows = createData(repositoriesData);
+  useEffect(() => {
+    initialRows = createData(data?.search);
+    setRows(initialRows);
+  }, [data]);
 
-  const classes = useStyles();
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [inputValue, setInputValue] = useState({} as IInputValue);
+  const debouncedValue = useDebounce(inputValue, 1000);
 
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    history.push(`/repository/${e.currentTarget.name}`);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue({ qualifier: e.currentTarget.id, value: e.currentTarget.value });
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
+  useEffect(() => {
+    if (inputValue.qualifier)
+      if (inputValue.value.length === 0) {
+        queryVariables.variables = { searchBy: 'is:public', first: 10, after: null, before: null };
+      } else if (inputValue.qualifier === 'owner') {
+        queryVariables.variables.searchBy = `user:${inputValue.value}`;
+      } else {
+        queryVariables.variables.searchBy = `${inputValue.value} in:${inputValue.qualifier}`;
+      }
+
+    lazyGetRepositories(queryVariables);
+  }, [debouncedValue]);
+
+  const transferPaginationData = (paginationData: IPaginationData) => {
+    queryVariables.variables.first = paginationData.rowPerPage || 10;
+
+    if (paginationData.direction === 'prev') {
+      queryVariables.variables.before = data?.search.pageInfo.startCursor;
+      queryVariables.variables.after = null;
+    }
+
+    if (paginationData.direction === 'next') {
+      queryVariables.variables.before = null;
+      queryVariables.variables.after = data?.search.pageInfo.endCursor;
+    }
+
+    if (paginationData.direction || paginationData.rowPerPage) lazyGetRepositories(queryVariables);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
-  };
+  console.log(queryVariables.variables);
+
+  //if (loading) return <Loading />;
 
   return (
     <div>
-      {authState.isLoggedIn && (
-        <img alt="" src={authState.user.avatar_url} width="100px" height="100px" />
-      )}
-      <button type="button" onClick={signOut}>
-        {' '}
-        Выйти{' '}
-      </button>
-      <div>Hello</div>
-      <Paper className={classes.root}>
-        <TableContainer className={classes.container}>
-          <Table stickyHeader aria-label="sticky table">
-            <TableHead>
-              <TableRow>
-                {columns.map((column) => (
-                  <TableCell
-                    key={column.id}
-                    align={column.align}
-                    style={{ minWidth: column.minWidth }}
-                  >
-                    {column.label}
-                    <TextField
-                      id={column.id}
-                      label="Search"
-                      type="input"
-                      autoComplete="current-password"
-                    />
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                return (
-                  <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
-                    {columns.map((column) => {
-                      const value = row[column.id];
-
-                      return (
-                        <TableCell key={column.id} align={column.align}>
-                          <button name={String(value)} type="button" onClick={handleClick}>
-                            {value}
-                          </button>
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 15]}
-          component="div"
-          count={rows?.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
+      <AuthBlock />
+      <TableUI
+        rows={rows}
+        transferPaginationData={transferPaginationData}
+        handleChange={handleChange}
+      />
     </div>
   );
 };
