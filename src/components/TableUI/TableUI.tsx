@@ -7,22 +7,37 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import { TextField } from '@material-ui/core';
-import TablePagination from '../TablePagination/TablePagination';
-import { Data, IPaginationData } from '../Repositories/interfaces';
+import { Button, TextField } from '@material-ui/core';
+import TablePagination from '@material-ui/core/TablePagination';
+import { Data } from '../Repositories/interfaces';
 import columns, { useStyles } from './columns';
 
 interface ITableUI {
   rows: Data[];
-  transferPaginationData: (arg0: IPaginationData) => void;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  numbersPages: number;
+  handleChangeRowsPerPage: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleChangePage: (event: unknown, newPage: number) => void;
+  rowsPerPage: number;
+  page: number;
 }
 
-const TableUI: React.FC<ITableUI> = ({ rows, transferPaginationData, handleChange }) => {
+const TableUI: React.FC<ITableUI> = ({
+  rows,
+  handleChange,
+  numbersPages,
+  handleChangeRowsPerPage,
+  handleChangePage,
+  rowsPerPage,
+  page,
+}) => {
   const history = useHistory();
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    history.push(`/repository/${e.currentTarget.name}`);
+    //history.push({ pathname: '/repository/', search: `?name=${e.currentTarget.name}` });
+    history.push(
+      `/repository?name=${e.currentTarget.name}&owner=${e.currentTarget.getAttribute('data-owner')}`
+    );
   };
 
   const classes = useStyles();
@@ -39,10 +54,9 @@ const TableUI: React.FC<ITableUI> = ({ rows, transferPaginationData, handleChang
                   align={column.align}
                   style={{ minWidth: column.minWidth }}
                 >
-                  {column.label}
                   <TextField
                     id={column.id}
-                    label="Search"
+                    label={column.label}
                     type="input"
                     autoComplete="current-password"
                     onChange={handleChange}
@@ -60,9 +74,17 @@ const TableUI: React.FC<ITableUI> = ({ rows, transferPaginationData, handleChang
 
                     return (
                       <TableCell key={column.id} align={column.align}>
-                        <button name={String(value)} type="button" onClick={handleClick}>
-                          {value}
-                        </button>
+                        {column.id === 'name' && (
+                          <Button
+                            color="secondary"
+                            name={String(value)}
+                            data-owner={row.owner}
+                            onClick={handleClick}
+                          >
+                            {value}
+                          </Button>
+                        )}
+                        {!(column.id === 'name') && value}
                       </TableCell>
                     );
                   })}
@@ -72,7 +94,15 @@ const TableUI: React.FC<ITableUI> = ({ rows, transferPaginationData, handleChang
           </TableBody>
         </Table>
       </TableContainer>
-      <TablePagination transferPaginationData={transferPaginationData} />
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={numbersPages}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
     </Paper>
   );
 };

@@ -24,7 +24,7 @@ const Loading: React.FC = () => {
       } else {
         count = 0;
       }
-    }, 150);
+    }, 300);
 
     return () => clearInterval(interval);
   }, []);
@@ -48,6 +48,7 @@ const Loading: React.FC = () => {
   return (
     <div
       style={{
+        position: 'relative',
         backgroundColor,
         width: '100vw',
         height: '100vh',
@@ -55,6 +56,7 @@ const Loading: React.FC = () => {
         flexDirection: 'column',
         justifyContent: 'space-between',
         alignItems: 'center',
+        zIndex: 1005,
       }}
     >
       <div

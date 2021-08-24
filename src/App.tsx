@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { BrowserRouter as Router, Route, Redirect, Switch } from 'react-router-dom';
 import AuthContext, { initialState } from './AuthContext';
 import styles from './App.module.scss';
 import Repositories from './components/Repositories/Repositories';
+import TrackingHead from './components/TrackingHead/TrackingHead';
 import Login from './components/Login/Login';
 import Repository from './components/Repository/Repository';
 import Layout from './components/Layout/Layout';
@@ -17,10 +18,8 @@ export interface IInitialState {
 }
 
 const App: React.FC = () => {
+  const app = useRef<HTMLDivElement>(null);
   const [authState, setAuthState] = useState<IInitialState>(initialState);
-  // if (loading) return <Loading/>;
-
-  // if (error) return <Error/>;
 
   return (
     <AuthContext.Provider
@@ -29,12 +28,13 @@ const App: React.FC = () => {
         setAuthState,
       }}
     >
-      <div className={styles.App}>
+      <div className={styles.App} ref={app}>
+        <TrackingHead app={app} />
         <Router>
           <Switch>
             <Route component={Repositories} exact path="/" />
             <Route component={Login} exact path="/login" />
-            <Route component={Repository} exact path="/repository/:id" />
+            <Route component={Repository} exact path="/repository" />
             <Route component={Layout} exact path="/layout" />
             <Redirect to="/layout" />
           </Switch>

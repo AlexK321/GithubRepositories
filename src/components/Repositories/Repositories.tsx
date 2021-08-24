@@ -5,27 +5,34 @@ import TableUI from '../TableUI/TableUI';
 import AuthBlock from '../AuthBlock/AuthBlock';
 import GET_ALL_REPOSITORIES from '../../graphql/query/repositories';
 import useDebounce from '../../hooks/useDebounse';
-import { Data, IInputValue, IQueryVariables, IPaginationData } from './interfaces';
+import CubeLoader from '../CubeLoader/CubeLoader';
+import { Data, IInputValue, IQueryVariables } from './interfaces';
 import createData from './createData';
 
 const Repositories: React.FC = () => {
-  let initialRows = [] as Data[];
-  const [lazyGetRepositories, { data }] = useLazyQuery(GET_ALL_REPOSITORIES);
+  const [lazyGetRepositories, { data, loading }] = useLazyQuery(GET_ALL_REPOSITORIES);
 
   const [rows, setRows] = useState([] as Data[]);
 
-  const queryVariables: IQueryVariables = {
+  const [queryVariables, setQueryVariables] = useState<IQueryVariables>({
     variables: { searchBy: 'is:public', first: 10, after: null, before: null },
-  };
+  });
+
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
+    //console.log('dm');
     lazyGetRepositories(queryVariables);
-  }, []);
+  }, [queryVariables]);
 
   useEffect(() => {
-    initialRows = createData(data?.search);
-    setRows(initialRows);
+    //console.log('duData');
+    setRows(createData(data?.search));
   }, [data]);
+
+  const numbersPages = Number(
+    (data?.search?.repositoryCount / queryVariables.variables.first).toFixed(0)
+  );
 
   const [inputValue, setInputValue] = useState({} as IInputValue);
   const debouncedValue = useDebounce(inputValue, 1000);
@@ -35,45 +42,74 @@ const Repositories: React.FC = () => {
   };
 
   useEffect(() => {
+    //console.log('duInput');
+
     if (inputValue.qualifier)
       if (inputValue.value.length === 0) {
-        queryVariables.variables = { searchBy: 'is:public', first: 10, after: null, before: null };
+        setQueryVariables({ variables: { ...queryVariables.variables, searchBy: 'is:public' } });
       } else if (inputValue.qualifier === 'owner') {
-        queryVariables.variables.searchBy = `user:${inputValue.value}`;
+        setQueryVariables({
+          variables: { ...queryVariables.variables, searchBy: `user:${inputValue.value}` },
+        });
       } else {
-        queryVariables.variables.searchBy = `${inputValue.value} in:${inputValue.qualifier}`;
+        setQueryVariables({
+          variables: {
+            ...queryVariables.variables,
+            searchBy: `${inputValue.value} in:${inputValue.qualifier}`,
+          },
+        });
       }
-
-    lazyGetRepositories(queryVariables);
   }, [debouncedValue]);
 
-  const transferPaginationData = (paginationData: IPaginationData) => {
-    queryVariables.variables.first = paginationData.rowPerPage || 10;
-
-    if (paginationData.direction === 'prev') {
-      queryVariables.variables.before = data?.search.pageInfo.startCursor;
-      queryVariables.variables.after = null;
-    }
-
-    if (paginationData.direction === 'next') {
-      queryVariables.variables.before = null;
-      queryVariables.variables.after = data?.search.pageInfo.endCursor;
-    }
-
-    if (paginationData.direction || paginationData.rowPerPage) lazyGetRepositories(queryVariables);
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPage(0);
+    setQueryVariables({
+      variables: {
+        ...queryVariables.variables,
+        first: Number(event.target.value),
+        before: null,
+        after: null,
+      },
+    });
   };
 
-  console.log(queryVariables.variables);
+  const handleChangePage = (event: unknown, newPage: number) => {
+    if (newPage > page)
+      setQueryVariables({
+        variables: {
+          ...queryVariables.variables,
+          before: null,
+          after: data?.search.pageInfo.endCursor,
+        },
+      });
 
-  //if (loading) return <Loading />;
+    if (newPage < page)
+      setQueryVariables({
+        variables: {
+          ...queryVariables.variables,
+          before: data?.search.pageInfo.endCursor,
+          after: null,
+        },
+      });
+
+    setPage(newPage);
+  };
+
+  console.log('render');
+
+  if (loading) return <CubeLoader />;
 
   return (
     <div>
       <AuthBlock />
       <TableUI
         rows={rows}
-        transferPaginationData={transferPaginationData}
+        page={page}
         handleChange={handleChange}
+        numbersPages={numbersPages}
+        handleChangePage={handleChangePage}
+        handleChangeRowsPerPage={handleChangeRowsPerPage}
+        rowsPerPage={queryVariables.variables.first}
       />
     </div>
   );

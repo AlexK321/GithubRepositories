@@ -9,11 +9,11 @@ interface ITablePagination {
 const TablePagination: React.FC<ITablePagination> = ({ transferPaginationData }) => {
   const [amountRows, setAmountRows] = React.useState('10');
 
-  const [paginationData, setPaginationData] = useState({ rowPerPage: 10 } as IPaginationData);
+  const [paginationData, setPaginationData] = useState({ rowsPerPage: 10 } as IPaginationData);
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setAmountRows(event.target.value as string);
-    setPaginationData({ ...paginationData, rowPerPage: Number(event.target.value) });
+    setPaginationData({ ...paginationData, rowsPerPage: Number(event.target.value) });
   };
 
   const onPrevClick = () => {

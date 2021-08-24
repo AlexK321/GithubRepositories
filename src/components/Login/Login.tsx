@@ -65,9 +65,6 @@ const Login: FC = () => {
               </div>
             ) : (
               <>
-                {
-                  // Link to request GitHub access
-                }
                 <a
                   className="login-link"
                   href={`https://github.com/login/oauth/authorize?scope=user&client_id=${clientId}&redirect_uri=${redirectUri}`}
@@ -75,7 +72,6 @@ const Login: FC = () => {
                     setData({ ...data, errorMessage: '' });
                   }}
                 >
-                  <p>Icon</p>
                   <span>Login with GitHub</span>
                 </a>
               </>

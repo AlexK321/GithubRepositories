@@ -1,0 +1,61 @@
+.wrapper {
+  perspective: 1000px; // глубина
+  perspective-origin: center -10px; // с какой точки смотрим 
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  background-color: rgb(89, 153, 89);
+  z-index: 1005;
+  opacity: 0.8;
+}
+
+.container {
+  width: 30em;
+  height: 30em;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform-style: preserve-3d;
+  animation: rotate 10s infinite linear;
+  .back, .left, .right, .bottom, .front, .top {
+    position: absolute;
+    width: 20em;
+    height: 20em;
+    border: 2px solid green;
+  }
+  .back {
+    transform: translateZ(10em);
+    background: #ffa726;
+  }
+  .top {
+    transform: translateZ(-10em);
+    background: #66bb6a;
+  }
+  .left {
+    transform: translateX(-10em)rotateY(90deg);
+    background: #26c6da;
+  }
+  .right {
+    transform: translateX(10em)rotateY(90deg);
+    background: #ef5350;
+  }
+  .front {
+    transform: translateY(10em)rotateX(90deg);
+    background: #e95ce2;
+  }
+  .bottom {
+    transform: translateY(-10em)rotateX(90deg);
+    background: #7e57c2;
+  }
+
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotateY(360deg)rotateX(360deg);
+  }
+}

@@ -1,3 +1,4 @@
+import { Button } from '@material-ui/core';
 import React, { useContext } from 'react';
 import { useHistory } from 'react-router';
 import AuthContext from '../../AuthContext';
@@ -16,14 +17,21 @@ const AuthBlock: React.FC = () => {
   };
 
   return (
-    <div>
+    <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
       {authState.isLoggedIn && (
-        <img alt="" src={authState.user.avatar_url} width="100px" height="100px" />
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <img
+            alt=""
+            src={authState.user.avatar_url}
+            width="100px"
+            height="100px"
+            style={{ display: 'flex', justifyContent: 'space-evenly' }}
+          />
+          <Button variant="contained" color="secondary" onClick={signOut}>
+            Выйти
+          </Button>
+        </div>
       )}
-      <button type="button" onClick={signOut}>
-        {' '}
-        Выйти{' '}
-      </button>
     </div>
   );
 };

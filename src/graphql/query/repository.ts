@@ -1,35 +1,17 @@
 import { gql } from '@apollo/client';
 
 const GET_REPOSITORY = gql`
-  query MyQuery($name: String!) {
-    user(login: "AlexK321") {
-      repository(name: $name) {
-        id
+  query MyQuery($name: String!, $owner: String!) {
+    repository(name: $name, owner: $owner) {
+      id
+      isPrivate
+      name
+      url
+      stargazerCount
+      primaryLanguage {
         name
-        owner {
-          avatarUrl(size: 1000)
-          id
-          login
-        }
-        viewerSubscription
-        url
-        primaryLanguage {
-          name
-        }
-        repositoryTopics(first: 10) {
-          nodes {
-            topic {
-              name
-            }
-          }
-        }
       }
-      issueComments(first: 10) {
-        nodes {
-          bodyHTML
-          bodyText
-        }
-      }
+      description
     }
   }
 `;

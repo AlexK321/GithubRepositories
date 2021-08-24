@@ -38,7 +38,7 @@ export interface IInputValue {
 export interface IQueryVariables {
   variables: {
     searchBy: String;
-    first: Number;
+    first: number;
     after?: null | String;
     before?: null | String;
   };
@@ -46,5 +46,5 @@ export interface IQueryVariables {
 
 export interface IPaginationData {
   direction: string;
-  rowPerPage: number;
+  rowsPerPage: number;
 }
