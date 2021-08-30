@@ -1,0 +1,8 @@
+{
+  "repository": {
+    "name": "Имя",
+    "owner": "Хозяин репозитория",
+    "description": "Описание",
+    "isPrivate": "Приватный"
+  }
+}

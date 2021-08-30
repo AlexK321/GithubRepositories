@@ -1,0 +1,8 @@
+{
+  "repository": {
+    "name": "Name",
+    "owner": "Owner",
+    "description": "Description",
+    "isPrivate": "Private"
+  }
+}
