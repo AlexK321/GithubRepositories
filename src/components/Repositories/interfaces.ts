@@ -37,10 +37,10 @@ export interface IInputValue {
 
 export interface IQueryVariables {
   variables: {
-    searchBy: String;
+    searchBy: string;
     first: number;
-    after?: null | String;
-    before?: null | String;
+    after?: null | string;
+    before?: null | string;
   };
 }
 

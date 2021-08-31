@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useLazyQuery } from '@apollo/client';
 //import Loading from '../Loading/Loading';
 import TableUI from '../TableUI/TableUI';
 import AuthBlock from '../AuthBlock/AuthBlock';
-import GET_ALL_REPOSITORIES from '../../graphql/query/repositories';
 import useDebounce from '../../hooks/useDebounse';
 import CubeLoader from '../CubeLoader/CubeLoader';
 import { Data, IInputValue, IQueryVariables } from './interfaces';
 import createData from './createData';
+import { useGetAllRepositoriesLazyQuery } from '../../generated/graphql';
 
 const Repositories: React.FC = () => {
-  const [lazyGetRepositories, { data, loading }] = useLazyQuery(GET_ALL_REPOSITORIES);
+  const [lazyGetRepositories, { data, loading }] = useGetAllRepositoriesLazyQuery();
 
   const [rows, setRows] = useState([] as Data[]);
 
@@ -27,11 +26,11 @@ const Repositories: React.FC = () => {
 
   useEffect(() => {
     //console.log('duData');
-    setRows(createData(data?.search));
+    setRows(createData(data));
   }, [data]);
 
   const numbersPages = Number(
-    (data?.search?.repositoryCount / queryVariables.variables.first).toFixed(0)
+    (data.search.repositoryCount / queryVariables.variables.first).toFixed(0)
   );
 
   const [inputValue, setInputValue] = useState({} as IInputValue);
